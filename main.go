@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/urfave/cli/v2"
@@ -17,7 +18,9 @@ type Config struct {
 }
 
 func resolve(domain string, result chan<- string) {
-	// I dont know what lib i should use
+	domain = strings.ToLower(domain)
+	result <- domain
+	// I don't know what lib I should use
 }
 func getDomains(path string) []string {
 	file, err := os.Open(path)
@@ -35,7 +38,7 @@ func getDomains(path string) []string {
 func worker(jobs <-chan string, result chan<- string, wg *sync.WaitGroup) {
 	defer wg.Done()
 	for domain := range jobs {
-		resolver(domain, result)
+		resolve(domain, result)
 	}
 }
 func main() {
@@ -66,7 +69,6 @@ func main() {
 	if err := cmd.Run(os.Args); err != nil {
 		log.Fatal(err)
 	}
-	domains := []string{"google.com", "google.dz", "yahoo.com", "yandex.ru"}
 	maxWorkers := config.threads
 	if maxWorkers < 1 {
 		fmt.Println("You must specify at least one worker to run.")
@@ -77,6 +79,7 @@ func main() {
 		fmt.Println("You must provide a domains file path")
 		return
 	}
+	domains := getDomains(domainsPath)
 	result := make(chan string)
 	jobs := make(chan string)
 	var wg sync.WaitGroup
