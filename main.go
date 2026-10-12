@@ -123,9 +123,33 @@ func main() {
 		wg.Wait()
 		close(result)
 	}()
+	var toWrite []string
 	for domain := range result {
 		fmt.Println(domain)
+		toWrite = append(toWrite, domain)
 	}
 
 	// TODO: Write output to a file
+	if config.output == "" {
+		log.Fatal("Output file must not be empty.")
+		return
+	}
+	file, err := os.Create(config.output)
+	if err != nil {
+		log.Fatal(err)
+	}
+	writer := bufio.NewWriter(file)
+	for _, domain := range toWrite {
+		_, err := writer.WriteString(domain + "\n")
+		if err != nil {
+			return
+		}
+	}
+	if err := writer.Flush(); err != nil {
+		log.Fatal(err)
+	}
+	if err := file.Close(); err != nil {
+		log.Fatal(err)
+	}
+
 }
