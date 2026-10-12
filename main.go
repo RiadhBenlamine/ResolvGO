@@ -126,4 +126,6 @@ func main() {
 	for domain := range result {
 		fmt.Println(domain)
 	}
+
+	// TODO: Write output to a file
 }
